@@ -21,7 +21,7 @@ export const Heading = ({ audioUrl, word, phonetic }) => {
         <img width={18} src={play} />
       </button>
 
-      <audio className="hidden" ref={ref} src={audioUrl} />
+      <audio data-testid="audio" className="hidden" ref={ref} src={audioUrl} />
     </div>
   );
 };

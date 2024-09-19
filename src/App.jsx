@@ -1,22 +1,34 @@
 // Importing necessary components and assets
+import React, { useState } from "react";
 import Content from "./Content";
 import Heading from "./Heading";
+import Error from './Error';
 import searchImg from "./assets/search.png";
-import { useState } from "react";
 
 function App() {
-  // State for the word to search and the search results
+  // State for the word to search, the search results, and any error
   const [word, setWord] = useState("");
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   // Function to fetch word data from the dictionary API
   const searchWord = async () => {
-    const response = await fetch(
-      "https://api.dictionaryapi.dev/api/v2/entries/en/" + word
-    );
-    
-    const data = await response.json();
-    setResults(data[0]);
+    try {
+      setError(null); // Clear any previous errors
+      const response = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+      );
+
+      if (!response.ok) {
+        setError('Word not found');
+      }
+
+      const data = await response.json();
+      setResults(data[0]);
+    } catch (err) {
+      setError(err.message);
+      setResults(null);
+    }
   };
 
   // Function to extract heading information from the results
@@ -46,18 +58,20 @@ function App() {
 
       {/* Search button */}
       <button className="-mx-14 px-3 py-4 rounded-lg" onClick={searchWord}>
-        <img src={searchImg} width={18} />
+        <img src={searchImg} width={18} alt="Search" />
       </button>
 
-      {/* Display results if available */}
-      {results?.meanings?.length > 0 && (
+      {/* Display results if available, otherwise show error */}
+      {error ? (
+        <Error message={error} />
+      ) : results?.meanings?.length > 0 ? (
         <>
           <Heading {...heading()} />
-          {results.meanings.map((content, index) => {
-            return <Content {...content} key={index} />;
-          })}
+          {results.meanings.map((content, index) => (
+            <Content {...content} key={index} />
+          ))}
         </>
-      )}
+      ) : null}
     </div>
   );
 }
